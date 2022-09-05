@@ -1,0 +1,78 @@
+version: '3'
+services:
+
+  client:
+    build:
+      context: ./client
+    ports:
+      - '8090:8080'
+    container_name: client
+    restart: always
+    volumes:
+      - ./client/:/usr/src/app/client
+      - /usr/src/app/client/node_modules
+
+  broker-service:
+    build:
+      context: ./server/broker-service
+    ports:
+      - '8080:80'
+    restart: always 
+    container_name: broker-service
+
+  sequence-number-service:
+    build:
+      context: ./server/sequence-number-service
+    ports:
+      - '8081:80'
+    restart: always 
+    container_name: sequence-number-service
+
+  cashier-service:
+    build:
+      context: ./server/cashier-service
+    ports:
+      - '8082:80'
+    restart: always 
+    container_name: cashier-service
+    environment:
+      DSN: "host=postgres port=5432 user=postgres password=password dbname=cashiers sslmode=disable timezone=UTC connect_timeout=5"
+
+  logger-service:
+    build:
+      context: ./server/logger-service
+    restart: always
+
+  listener-service: 
+    build:
+      context: ./server/listener-service 
+
+  postgres:
+    image: "postgres:14.0"
+    ports:
+      - "5432:5432"
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: cashiers
+    volumes:
+      - ./db-data/postgres/:/var/lib/postgresql/data/
+
+  mongo:
+    image: 'mongo:4.2.16-bionic'
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_DATABASE: logs
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password
+    volumes:
+      - ./db-data/mongo/:/data/db
+
+  rabbitmq:
+    image: 'rabbitmq:3.9-alpine'
+    ports:
+     - "5672:5672"
+    volumes:
+     - ./db-data/rabbitmq/:/var/lib/rabbitmq/
