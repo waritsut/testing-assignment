@@ -119,8 +119,6 @@ export default {
   line-height: 1.6;
 }
 .footer {
-  position: absolute;
-  bottom: 30%;
   text-align: left;
   margin-left: 5rem;
 }
